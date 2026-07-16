@@ -1,0 +1,215 @@
+{
+  "info": {
+    "name": "Game API",
+    "description": "API collection for the Paint Shop Dojo game module (apps/backend/src/modules/game). Base URL: {{baseUrl}}/api. All endpoints require a participant Bearer token — run \"Login\" in the main Paint Shop Dojo collection (or set {{token}} manually) first.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "JWT Bearer token for a participant — set after login"
+    },
+    {
+      "key": "runId",
+      "value": "",
+      "type": "string",
+      "description": "Auto-set after Start Run / Start Batch Run"
+    }
+  ],
+  "item": [
+    {
+      "name": "Get Flow",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/game/flows/:code",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "game", "flows", ":code"],
+          "variable": [
+            { "key": "code", "value": "PAINT_SHOP", "description": "Game flow code" }
+          ]
+        },
+        "description": "Get a game flow with its processes and judgement bands."
+      }
+    },
+    {
+      "name": "Get Models for Flow",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/game/flows/:code/models",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "game", "flows", ":code", "models"],
+          "variable": [
+            { "key": "code", "value": "PAINT_SHOP", "description": "Game flow code" }
+          ]
+        },
+        "description": "List selectable car models for a flow (model-choice screen)."
+      }
+    },
+    {
+      "name": "Get Model Colours",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/game/models/:code/colours",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "game", "models", ":code", "colours"],
+          "variable": [
+            { "key": "code", "value": "HYCROSS", "description": "Car model code" }
+          ]
+        },
+        "description": "List colours a car model is available in (colour-choice screen)."
+      }
+    },
+    {
+      "name": "Start Run",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const res = pm.response.json();",
+              "if (res.id) {",
+              "  pm.collectionVariables.set('runId', res.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"carModelCode\": \"HYCROSS\",\n  \"carColourCode\": \"MICA\",\n  \"languageCode\": \"EN\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/game/runs/start",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "game", "runs", "start"]
+        },
+        "description": "Start a game run for a chosen car model; returns the first question. carColourCode and languageCode are optional. Auto-sets {{runId}} on success."
+      }
+    },
+    {
+      "name": "Submit Answer",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"questionId\": \"<question-id>\",\n  \"chosenProcessId\": \"<chosen-process-id>\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/game/runs/:id/answer",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "game", "runs", ":id", "answer"],
+          "variable": [
+            { "key": "id", "value": "{{runId}}", "description": "Game run ID" }
+          ]
+        },
+        "description": "Submit an answer click; returns a hint on a wrong answer or the next step on a correct one."
+      }
+    },
+    {
+      "name": "Get Run",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/game/runs/:id",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "game", "runs", ":id"],
+          "variable": [
+            { "key": "id", "value": "{{runId}}", "description": "Game run ID" }
+          ]
+        },
+        "description": "Get a run with its steps and answer events (result page)."
+      }
+    },
+    {
+      "name": "Start Batch Run",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const res = pm.response.json();",
+              "if (res.id) {",
+              "  pm.collectionVariables.set('runId', res.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"carModelCode\": \"HYCROSS\",\n  \"languageCode\": \"KN\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/game/runs/start-batch",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "game", "runs", "start-batch"],
+          "query": []
+        },
+        "description": "Start a game run and get ALL questions up front (play locally, submit at the end). No colour is collected here (chosen client-side, mid-flow). languageCode is optional. Response includes every active language's text per question/option/hint for in-session language switching. Auto-sets {{runId}} on success."
+      }
+    },
+    {
+      "name": "Submit Batch",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"steps\": [\n    {\n      \"questionId\": \"<question-id>\",\n      \"answers\": [\n        { \"chosenProcessId\": \"<wrong-process-id>\", \"attemptNo\": 1, \"isCorrect\": false },\n        { \"chosenProcessId\": \"<correct-process-id>\", \"attemptNo\": 2, \"isCorrect\": true }\n      ],\n      \"timeTaken\": 12\n    }\n  ],\n  \"carColourId\": \"<car-colour-id>\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/game/runs/:id/submit",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "game", "runs", ":id", "submit"],
+          "variable": [
+            { "key": "id", "value": "{{runId}}", "description": "Game run ID" }
+          ]
+        },
+        "description": "Submit all answers for a run at once and get the result. steps covers every served question; answers is every process clicked for that step, in click order (wrong guesses first, correct one last) — a first-try-correct step is a 1-element array. attemptNo is the 1-based order of the click within the step. isCorrect/wrongAttempts/pointsAwarded/score are accepted but ignored — recomputed server-side from the model's actual sequence. carColourId is the colour chosen mid-flow client-side (id from GET /models/:code/colours), optional but must be valid for the run's car model if sent. timeTaken is optional per step (analytics only)."
+      }
+    }
+  ]
+}

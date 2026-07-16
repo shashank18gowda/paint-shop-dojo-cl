@@ -1,0 +1,10 @@
+{
+  "extends": "@repo/typescript-config/nest.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "baseUrl": "./",
+    // TODO: enable incrementally — legacy code predates this stricter check (inherited from base).
+    "noUncheckedIndexedAccess": false
+  },
+  "exclude": ["node_modules", "dist", "test"]
+}

@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /home/viven/Documents/tkm/paint-shop-dojo && pnpm --filter quiz-app build >> /tmp/quiz-app-build.log 2>&1 & pnpm --filter backend build >> /tmp/backend-build.log 2>&1 &",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

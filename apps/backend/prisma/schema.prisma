@@ -1,0 +1,965 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum AdminRole {
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum QuestionType {
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+}
+
+enum SessionStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+  FAILED
+}
+
+enum SessionKind {
+  QUIZ
+  GAME
+}
+
+enum LeaderboardType {
+  GLOBAL
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum LeaderboardSource {
+  QUIZ
+  GAME
+}
+
+enum GameRunStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+enum ReportType {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum EmailDispatchStatus {
+  SUCCESS
+  FAILED
+}
+
+// ─── Designation ─────────────────────────────────────────────────────────────
+
+model Designation {
+  id          String  @id @default(uuid(7))
+  code        String  @unique
+  name        String
+  description String?
+
+  isActive  Boolean @default(true)
+  sortOrder Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participants       Participant[]
+  leaderboardEntries LeaderboardEntry[]
+
+  @@index([isActive])
+}
+
+// ─── Line ─────────────────────────────────────────────────────────────────────
+
+model Line {
+  id   String @id @default(uuid(7))
+  code String @unique
+  name String
+
+  isActive  Boolean @default(true)
+  sortOrder Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participants       Participant[]
+  sessions           ParticipantSession[]
+  leaderboardEntries LeaderboardEntry[]
+}
+
+// ─── Plant ────────────────────────────────────────────────────────────────────
+
+model Plant {
+  id          String  @id @default(uuid(7))
+  code        String  @unique
+  name        String
+  location    String?
+  description String?
+
+  isActive  Boolean @default(true)
+  sortOrder Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participants Participant[]
+
+  @@index([isActive])
+}
+
+// ─── Language ─────────────────────────────────────────────────────────────────
+
+model Language {
+  id   String @id @default(uuid(7))
+  code String @unique
+  name String
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  questionTranslations        QuestionTranslation[]
+  optionTranslations          OptionTranslation[]
+  gameProcessTranslations     GameProcessTranslation[]
+  gameQuestionTranslations    GameQuestionTranslation[]
+  gameProcessHintTranslations GameProcessHintTranslation[]
+}
+
+// ─── ParticipantType ──────────────────────────────────────────────────────────
+
+model ParticipantType {
+  id   String @id @default(uuid(7))
+  code String @unique
+  name String
+
+  isActive  Boolean @default(true)
+  sortOrder Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participants Participant[]
+}
+
+// ─── Participant ──────────────────────────────────────────────────────────────
+
+model Participant {
+  id   String @id @default(uuid(7))
+  code String @unique
+  name String
+
+  designationId String
+  designation   Designation @relation(fields: [designationId], references: [id])
+
+  participantTypeId String
+  participantType   ParticipantType @relation(fields: [participantTypeId], references: [id])
+
+  lineId String
+  line   Line   @relation(fields: [lineId], references: [id])
+
+  plantId String?
+  plant   Plant?  @relation(fields: [plantId], references: [id])
+
+  role      Role     @default(USER)
+  imageUrl  String?
+  enteredAt DateTime @default(now())
+  isActive  Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions           ParticipantSession[]
+  leaderboardEntries LeaderboardEntry[]
+  certificates       Certificate[]
+
+  @@index([designationId])
+  @@index([participantTypeId])
+  @@index([lineId])
+  @@index([plantId])
+  @@index([isActive])
+}
+
+// ─── Admin ────────────────────────────────────────────────────────────────────
+
+model Admin {
+  id           String    @id @default(uuid(7))
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         AdminRole @default(ADMIN)
+
+  isActive            Boolean @default(true)
+  receivesDailyReport Boolean @default(true)
+
+  lastLoginAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+}
+
+// ─── Question ─────────────────────────────────────────────────────────────────
+
+model Question {
+  id String @id @default(uuid(7))
+
+  difficulty     Int?
+  points         Int          @default(1)
+  timeLimit      Int          @default(30)
+  type           QuestionType @default(SINGLE_CHOICE)
+  explanation    String?
+  shuffleOptions Boolean      @default(true)
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  options      QuestionOption[]
+  translations QuestionTranslation[]
+  answers      QuizAnswer[]
+
+  @@index([isActive])
+}
+
+// ─── QuestionTranslation ──────────────────────────────────────────────────────
+
+model QuestionTranslation {
+  id String @id @default(uuid(7))
+
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id])
+
+  languageId String
+  language   Language @relation(fields: [languageId], references: [id])
+
+  text String
+
+  @@unique([questionId, languageId])
+}
+
+// ─── QuestionOption ───────────────────────────────────────────────────────────
+
+model QuestionOption {
+  id String @id @default(uuid(7))
+
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id])
+
+  isCorrect Boolean @default(false)
+  order     Int?
+
+  translations OptionTranslation[]
+  answers      QuizAnswer[]
+
+  @@index([questionId])
+}
+
+// ─── OptionTranslation ────────────────────────────────────────────────────────
+
+model OptionTranslation {
+  id String @id @default(uuid(7))
+
+  optionId String
+  option   QuestionOption @relation(fields: [optionId], references: [id])
+
+  languageId String
+  language   Language @relation(fields: [languageId], references: [id])
+
+  text String
+
+  @@unique([optionId, languageId])
+}
+
+// ─── PerformanceLevel ────────────────────────────────────────────────────────
+
+model PerformanceLevel {
+  id String @id @default(uuid(7))
+
+  code String @unique
+  name String
+
+  minScore Float
+  maxScore Float
+  color    String?
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  attempts QuizAttempt[]
+
+  @@index([minScore, maxScore])
+  @@index([isActive])
+}
+
+// ─── QuizAttempt ─────────────────────────────────────────────────────────────
+
+model QuizAttempt {
+  id String @id @default(uuid(7))
+
+  sessionId String
+  session   ParticipantSession @relation(fields: [sessionId], references: [id])
+
+  totalQuestions Int
+  correctAnswers Int
+
+  score      Float
+  maxScore   Float
+  percentage Float
+  isPassed   Boolean @default(false)
+
+  performanceLevelId String?
+  performanceLevel   PerformanceLevel? @relation(fields: [performanceLevelId], references: [id])
+
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  answers          QuizAnswer[]
+  leaderboardEntry LeaderboardEntry?
+  certificate      Certificate?
+
+  @@index([sessionId])
+  @@index([performanceLevelId])
+}
+
+// ─── QuizAnswer ──────────────────────────────────────────────────────────────
+
+model QuizAnswer {
+  id String @id @default(uuid(7))
+
+  attemptId String
+  attempt   QuizAttempt @relation(fields: [attemptId], references: [id])
+
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id])
+
+  optionId String
+  option   QuestionOption @relation(fields: [optionId], references: [id])
+
+  isCorrect     Boolean
+  pointsAwarded Float?
+  timeTaken     Int?
+
+  createdAt DateTime @default(now())
+
+  @@index([attemptId])
+  @@index([questionId])
+}
+
+// ─── ParticipantSession ───────────────────────────────────────────────────────
+
+model ParticipantSession {
+  id String @id @default(uuid(7))
+
+  participantId String
+  participant   Participant @relation(fields: [participantId], references: [id])
+
+  kind SessionKind @default(QUIZ)
+
+  lineId String?
+  line   Line?   @relation(fields: [lineId], references: [id])
+
+  languageCode String?
+
+  startedAt       DateTime  @default(now())
+  completedAt     DateTime?
+  durationSeconds Int?
+
+  score    Float?
+  maxScore Float?
+  isPassed Boolean?
+
+  status SessionStatus @default(IN_PROGRESS)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  attempts QuizAttempt[]
+  gameRuns GameRun[]
+
+  @@index([participantId])
+  @@index([participantId, kind])
+  @@index([status])
+  @@index([lineId])
+}
+
+// ─── GameFlow ────────────────────────────────────────────────────────────────
+// A complete playable sequence (e.g. "Paint Shop Process Flow").
+// Holds scoring config; lets you version flows or run more than one game.
+
+model GameFlow {
+  id String @id @default(uuid(7))
+
+  code        String  @unique
+  name        String
+  description String?
+
+  pointsPerCorrect Float @default(5)
+  penaltyPerWrong  Float @default(0) // set 2.5 to enable negative marking
+  penaltyPerHint   Float @default(0) // deducted per hint the trainee opens, on top of penaltyPerWrong
+  maxWrongAttempts Int   @default(3) // == number of hints/purposes per process
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  processes GameProcess[]
+  questions GameQuestion[]
+  runs      GameRun[]
+  bands     GameJudgementBand[]
+  carModels CarModel[]
+
+  @@index([isActive])
+}
+
+// ─── CarModel ────────────────────────────────────────────────────────────────
+// A selectable car model within a flow. Models share the flow's process library
+// but each plays its OWN subset+order of processes (see CarModelProcess), e.g.
+// model A uses 9 of 10 steps, model B all 10. The trainee picks a model before
+// the run; the chosen model defines the sequence and the correct "next" answers.
+
+model CarModel {
+  id String @id @default(uuid(7))
+
+  flowId String
+  flow   GameFlow @relation(fields: [flowId], references: [id])
+
+  code String @unique
+  name String
+
+  imageUrl  String?
+  isActive  Boolean @default(true)
+  sortOrder Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  questions CarModelQuestion[]
+  colours   CarModelColour[]
+  runs      GameRun[]
+
+  @@index([flowId])
+  @@index([isActive])
+}
+
+// ─── CarColour ───────────────────────────────────────────────────────────────
+// A paint colour a car can be finished in. Colours don't change the process
+// sequence — the steps reference "the selected colour" generically — they drive
+// the Phaser visuals (via `hex`) and are recorded on the run. Which colours a
+// model offers is defined by CarModelColour.
+
+model CarColour {
+  id String @id @default(uuid(7))
+
+  code String  @unique
+  name String
+  hex  String? // e.g. "#B0060F" — used to render the car in-game
+
+  imageUrl  String?
+  isActive  Boolean @default(true)
+  sortOrder Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  models CarModelColour[]
+  runs   GameRun[]
+
+  @@index([isActive])
+}
+
+// ─── CarModelColour ──────────────────────────────────────────────────────────
+// Which colours a given model is available in.
+
+model CarModelColour {
+  id String @id @default(uuid(7))
+
+  carModelId String
+  carModel   CarModel @relation(fields: [carModelId], references: [id], onDelete: Cascade)
+
+  carColourId String
+  carColour   CarColour @relation(fields: [carColourId], references: [id], onDelete: Cascade)
+
+  sortOrder Int?
+
+  @@unique([carModelId, carColourId])
+  @@index([carModelId])
+  @@index([carColourId])
+}
+
+// ─── CarModelQuestion ────────────────────────────────────────────────────────
+// Which questions (screens) a model plays and in what order. stepNo is the
+// position within THIS model's sequence; every question is served (the correct
+// answer is stored on the question itself, so there is no "terminal step").
+// Omitting a question = it isn't part of this model's flow.
+
+model CarModelQuestion {
+  id String @id @default(uuid(7))
+
+  carModelId String
+  carModel   CarModel @relation(fields: [carModelId], references: [id], onDelete: Cascade)
+
+  questionId String
+  question   GameQuestion @relation(fields: [questionId], references: [id])
+
+  stepNo Int
+
+  @@unique([carModelId, stepNo])
+  @@unique([carModelId, questionId])
+  @@index([carModelId])
+  @@index([questionId])
+}
+
+// ─── GameProcess ─────────────────────────────────────────────────────────────
+// The answer catalog: one paint-shop process a trainee can pick as an option,
+// plus what that process intrinsically IS (the result of applying it + its
+// purposes). A process is NOT a screen — screens are GameQuestion. The 4 answer
+// choices on a question are generated at runtime: the correct choice is the
+// question's `correctProcess`, the 3 wrong choices are random other processes in
+// the same flow (so each player sees different distractors).
+
+model GameProcess {
+  id String @id @default(uuid(7))
+
+  flowId String
+  flow   GameFlow @relation(fields: [flowId], references: [id])
+
+  // Stable per-flow identifier for seeding/reference (e.g. "DEGREASING").
+  code String
+  name String
+
+  // The RESULT of applying this process — surfaced on the reveal after a
+  // question whose correct answer is this process.
+  carVisualAfter    String?
+  animationFeedback String?
+  developerNotes    String?
+  imageUrl          String?
+
+  // If false, this process is never offered as a random wrong option.
+  eligibleAsDistractor Boolean @default(true)
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  hints            GameProcessHint[]
+  events           GameAnswerEvent[] // events where this process was the chosen answer
+  translations     GameProcessTranslation[]
+  correctForQuestions GameQuestion[] // questions this process is the correct answer to
+
+  @@unique([flowId, code])
+  @@unique([id, flowId]) // composite-FK target for GameQuestion.correctProcess
+  @@index([flowId])
+}
+
+// ─── QuestionKind ────────────────────────────────────────────────────────────
+// PROCESS_PICK  → trainee picks the correct next process (scored).
+// COLOUR_PICK   → trainee picks a paint colour (e.g. Base Coat); not process-scored.
+// CONFIRM       → acknowledge/confirm screen (e.g. "ready for dispatch?"); not scored.
+
+enum QuestionKind {
+  PROCESS_PICK
+  COLOUR_PICK
+  CONFIRM
+}
+
+// ─── GameQuestion ────────────────────────────────────────────────────────────
+// One on-screen stage: the car state shown + the question asked + (for a
+// PROCESS_PICK) its explicit correct answer. Storing the answer here — rather
+// than deriving "the next process in the sequence" — is what keeps the correct
+// option aligned with the state on screen.
+
+model GameQuestion {
+  id String @id @default(uuid(7))
+
+  flowId String
+  flow   GameFlow @relation(fields: [flowId], references: [id])
+
+  stepNo Int
+  kind   QuestionKind @default(PROCESS_PICK)
+
+  // Prompt / visual cues for the state shown BEFORE answering.
+  questionText      String
+  initialVisualText String?
+  carVisualBefore   String?
+
+  // The correct answer for this screen. Required for PROCESS_PICK (enforced by a
+  // CHECK constraint in the migration); null for COLOUR_PICK / CONFIRM screens.
+  correctProcessId String?
+  correctProcess   GameProcess? @relation(fields: [correctProcessId, flowId], references: [id, flowId], onDelete: Restrict)
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  translations GameQuestionTranslation[]
+  carModels    CarModelQuestion[]
+  steps        GameRunStep[]
+
+  @@unique([flowId, stepNo])
+  @@index([flowId])
+  @@index([correctProcessId])
+}
+
+// ─── GameProcessTranslation ──────────────────────────────────────────────────
+// Localized copy of a process's user-facing text. The base GameProcess fields
+// are the default (English) content and act as the fallback when a translation
+// for the chosen language is missing. developerNotes/imageUrl are never localized.
+
+model GameProcessTranslation {
+  id String @id @default(uuid(7))
+
+  processId String
+  process   GameProcess @relation(fields: [processId], references: [id])
+
+  languageId String
+  language   Language @relation(fields: [languageId], references: [id])
+
+  name              String
+  carVisualAfter    String?
+  animationFeedback String?
+
+  @@unique([processId, languageId])
+  @@index([processId])
+}
+
+// ─── GameQuestionTranslation ─────────────────────────────────────────────────
+// Localized copy of a question's prompt text; base GameQuestion fields are the
+// fallback when a translation for the chosen language is missing.
+
+model GameQuestionTranslation {
+  id String @id @default(uuid(7))
+
+  questionId String
+  question   GameQuestion @relation(fields: [questionId], references: [id])
+
+  languageId String
+  language   Language @relation(fields: [languageId], references: [id])
+
+  questionText      String
+  initialVisualText String?
+  carVisualBefore   String?
+
+  @@unique([questionId, languageId])
+  @@index([questionId])
+}
+
+// ─── GameProcessHint ─────────────────────────────────────────────────────────
+// The "purposes" — revealed progressively on each wrong attempt.
+// order 1 → shown after 1st wrong, order 2 → 2nd wrong, etc.
+
+model GameProcessHint {
+  id String @id @default(uuid(7))
+
+  processId String
+  process   GameProcess @relation(fields: [processId], references: [id])
+
+  order Int
+  text  String
+
+  translations GameProcessHintTranslation[]
+
+  @@unique([processId, order])
+  @@index([processId])
+}
+
+// ─── GameProcessHintTranslation ──────────────────────────────────────────────
+// Localized hint text; base GameProcessHint.text is the fallback.
+
+model GameProcessHintTranslation {
+  id String @id @default(uuid(7))
+
+  hintId String
+  hint   GameProcessHint @relation(fields: [hintId], references: [id])
+
+  languageId String
+  language   Language @relation(fields: [languageId], references: [id])
+
+  text String
+
+  @@unique([hintId, languageId])
+  @@index([hintId])
+}
+
+// ─── GameJudgementBand ───────────────────────────────────────────────────────
+// Final result bands per flow (Below 25 = Needs Improvement, 25–35 = Good,
+// 35–40 = Excellent). Drives result page + certificate eligibility.
+
+model GameJudgementBand {
+  id String @id @default(uuid(7))
+
+  flowId String
+  flow   GameFlow @relation(fields: [flowId], references: [id])
+
+  code     String
+  name     String
+  minScore Float
+  maxScore Float
+  color    String?
+
+  certificateEligible Boolean @default(false)
+
+  runs GameRun[]
+
+  @@unique([flowId, code])
+  @@index([flowId, minScore, maxScore])
+}
+
+// ─── GameRun ─────────────────────────────────────────────────────────────────
+// One participant's full play-through of a flow.
+
+model GameRun {
+  id String @id @default(uuid(7))
+
+  // Participant is derived through the session (mirrors QuizAttempt → session).
+  sessionId String
+  session   ParticipantSession @relation(fields: [sessionId], references: [id])
+
+  flowId String
+  flow   GameFlow @relation(fields: [flowId], references: [id])
+
+  // The car model the trainee chose; defines the run's process sequence.
+  carModelId String?
+  carModel   CarModel? @relation(fields: [carModelId], references: [id])
+
+  // The chosen paint colour (visual/record only; doesn't affect the sequence).
+  carColourId String?
+  carColour   CarColour? @relation(fields: [carColourId], references: [id])
+
+  score    Float @default(0)
+  maxScore Float
+
+  status GameRunStatus @default(IN_PROGRESS)
+
+  judgementBandId String?
+  judgementBand   GameJudgementBand? @relation(fields: [judgementBandId], references: [id])
+
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  timeTaken   Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  steps            GameRunStep[]
+  leaderboardEntry LeaderboardEntry?
+  certificate      Certificate?
+
+  @@index([sessionId])
+  @@index([flowId])
+  @@index([carModelId])
+  @@index([carColourId])
+  @@index([status])
+}
+
+// ─── GameRunStep ─────────────────────────────────────────────────────────────
+// How a participant performed on one question within a run.
+
+model GameRunStep {
+  id String @id @default(uuid(7))
+
+  runId String
+  run   GameRun @relation(fields: [runId], references: [id])
+
+  questionId String
+  question   GameQuestion @relation(fields: [questionId], references: [id])
+
+  // The process ids actually shown as options (1 correct + 3 random distractors),
+  // persisted so the exact screen can be reconstructed/audited. Empty for
+  // non-PROCESS_PICK screens.
+  shownProcessIds Json
+
+  wrongAttempts Int     @default(0) // 0..maxWrongAttempts → also = hints revealed
+  hintsUsed     Int     @default(0) // hints the trainee actually opened (batch play, client-reported)
+  pointsAwarded Float   @default(0)
+  isCorrect     Boolean @default(false)
+  timeTaken     Int?
+
+  createdAt DateTime @default(now())
+
+  events GameAnswerEvent[]
+
+  @@unique([runId, questionId])
+  @@index([runId])
+  @@index([questionId])
+}
+
+// ─── GameAnswerEvent ─────────────────────────────────────────────────────────
+// Every individual click — full analytics on the hint mechanic.
+
+model GameAnswerEvent {
+  id String @id @default(uuid(7))
+
+  stepId String
+  step   GameRunStep @relation(fields: [stepId], references: [id])
+
+  chosenProcessId String
+  chosenProcess   GameProcess @relation(fields: [chosenProcessId], references: [id])
+
+  attemptNo    Int
+  isCorrect    Boolean
+  hintRevealed Int?
+
+  createdAt DateTime @default(now())
+
+  @@index([stepId])
+  @@index([chosenProcessId])
+}
+
+// ─── LeaderboardEntry ────────────────────────────────────────────────────────
+
+model LeaderboardEntry {
+  id String @id @default(uuid(7))
+
+  // Exactly one of attempt / gameRun is set, per `source`. Quiz and game are
+  // ranked on separate boards (different score units), filtered by `source`.
+  source LeaderboardSource @default(QUIZ)
+
+  attemptId String?      @unique
+  attempt   QuizAttempt? @relation(fields: [attemptId], references: [id])
+
+  gameRunId String?  @unique
+  gameRun   GameRun? @relation(fields: [gameRunId], references: [id])
+
+  participantId String
+  participant   Participant @relation(fields: [participantId], references: [id])
+
+  designationId String
+  designation   Designation @relation(fields: [designationId], references: [id])
+
+  lineId String?
+  line   Line?   @relation(fields: [lineId], references: [id])
+
+  score      Float
+  percentage Float
+  rank       Int
+
+  type LeaderboardType
+
+  createdAt DateTime @default(now())
+
+  @@index([score])
+  @@index([designationId])
+  @@index([lineId])
+  @@index([type])
+  @@index([source, type])
+}
+
+// ─── ReportRecipient ─────────────────────────────────────────────────────────
+// Email addresses that scheduled report-sharing jobs send reports to.
+
+model ReportRecipient {
+  id    String  @id @default(uuid(7))
+  email String  @unique
+  name  String?
+  notes String?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reportAccess    ReportAccess[]
+  dispatchHistory EmailDispatchHistory[]
+
+  @@index([isActive])
+}
+
+// ─── ReportAccess ────────────────────────────────────────────────────────────
+// Per-recipient toggle controlling which scheduled report digests (daily/
+// weekly/monthly) a recipient is allowed to receive.
+
+model ReportAccess {
+  id String @id @default(uuid(7))
+
+  recipientId String
+  recipient   ReportRecipient @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+
+  reportType ReportType
+  enabled    Boolean    @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([recipientId, reportType])
+  @@index([reportType, enabled])
+}
+
+// ─── EmailDispatchHistory ────────────────────────────────────────────────────
+// Audit log of every scheduled report email attempt, success or failure.
+
+model EmailDispatchHistory {
+  id String @id @default(uuid(7))
+
+  recipientId String
+  recipient   ReportRecipient @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+
+  reportType ReportType
+  status     EmailDispatchStatus
+  error      String?
+
+  sentAt DateTime @default(now())
+
+  @@index([recipientId, reportType, sentAt])
+  @@index([reportType, sentAt])
+}
+
+// ─── Certificate ─────────────────────────────────────────────────────────────
+
+model Certificate {
+  id String @id @default(uuid(7))
+
+  // Issued from either a quiz attempt or a game run (exactly one is set).
+  attemptId String?      @unique
+  attempt   QuizAttempt? @relation(fields: [attemptId], references: [id])
+
+  gameRunId String?  @unique
+  gameRun   GameRun? @relation(fields: [gameRunId], references: [id])
+
+  participantId String?
+  participant   Participant? @relation(fields: [participantId], references: [id])
+
+  certificateNo String   @unique
+  issuedAt      DateTime @default(now())
+
+  participantName String
+  employeeCode    String
+  designationName String
+  lineName        String?
+
+  score      Float
+  maxScore   Float
+  percentage Float
+
+  performanceName  String
+  performanceColor String?
+
+  createdAt DateTime @default(now())
+
+  @@index([participantId, issuedAt])
+}

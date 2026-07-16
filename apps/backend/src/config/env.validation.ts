@@ -1,0 +1,32 @@
+import * as Joi from 'joi';
+
+export const envValidationSchema = Joi.object({
+  DATABASE_URL: Joi.string().required(),
+  JWT_SECRET: Joi.string().min(32).required(),
+  JWT_EXPIRY: Joi.string().default('8h'),
+  PORT: Joi.number().default(3001),
+  BACKEND_URL: Joi.string().uri().default('http://localhost:3001'),
+  ALLOWED_ORIGINS: Joi.string().default('http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:5173'),
+  THROTTLE_TTL_MS: Joi.number().default(60000),
+  THROTTLE_LIMIT: Joi.number().default(10),
+  QUIZ_PASS_THRESHOLD_PERCENT: Joi.number().min(0).max(100).default(50),
+  QUIZ_DEFAULT_QUESTION_COUNT: Joi.number().min(1).default(10),
+  QUIZ_COOLDOWN_PASS_DAYS: Joi.number().min(0).default(365),
+  QUIZ_COOLDOWN_FAIL_DAYS: Joi.number().min(0).default(30),
+  GAME_COOLDOWN_PASS_DAYS: Joi.number().min(0).default(365),
+  GAME_COOLDOWN_FAIL_DAYS: Joi.number().min(0).default(30),
+  UPLOADS_PHOTOS_DIR: Joi.string().default('./uploads/photos'),
+  UPLOAD_MAX_SIZE_BYTES: Joi.number().default(5242880),
+  EXPORT_MAX_ROWS: Joi.number().default(10000),
+  ADMIN_DEFAULT_PAGE_SIZE: Joi.number().default(20),
+  COMPANY_NAME: Joi.string().default('TOYOTA KIRLOSKAR MOTOR'),
+  TRAINING_PROGRAM_NAME: Joi.string().default('Paint Shop Training Program'),
+  CERT_NUMBER_PREFIX: Joi.string().default('TKM-PS'),
+  BREVO_API_KEY: Joi.string().allow('').default(''),
+  BREVO_SENDER_EMAIL: Joi.string().allow('').default(''),
+  BREVO_SENDER_NAME: Joi.string().default('Paint Shop Dojo'),
+  // Seed-only (consumed by prisma/seed.ts; optional with defaults).
+  SEED_ADMIN_EMAIL: Joi.string().email().default('admin@tkm.co.in'),
+  SEED_ADMIN_PASSWORD: Joi.string().default('change-me-please'),
+  SEED_ADMIN_NAME: Joi.string().default('Admin'),
+});

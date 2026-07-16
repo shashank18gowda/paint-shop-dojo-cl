@@ -1,0 +1,42 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# Single source of truth for shared dependency versions.
+# Packages reference these with "catalog:" instead of a hard-coded range.
+catalog:
+  # Language / build
+  typescript: 5.9.2
+  turbo: ^2.9.18
+  prettier: ^3.8.4
+  # React
+  react: 19.2.4
+  react-dom: 19.2.4
+  "@types/react": 19.2.2
+  "@types/react-dom": 19.2.2
+  # Node types
+  "@types/node": ^22.15.3
+  # Next.js
+  next: 16.2.4
+  eslint-config-next: 16.2.4
+  # Lint
+  eslint: ^9.39.1
+  # Styling
+  tailwindcss: ^4
+  "@tailwindcss/postcss": ^4
+  # State / data
+  "@tanstack/react-query": 5.99.2
+  zustand: ^5.0.14
+
+# Dependencies allowed to run install/build scripts (pnpm 10+ blocks all by default).
+onlyBuiltDependencies:
+  - "@prisma/engines" # downloads the Prisma query engine
+  - bcrypt # native module used by backend auth
+  - prisma # Prisma CLI postinstall
+  - sharp # Next.js image optimization
+  - unrs-resolver # native eslint import-resolver binary
+
+# Intentionally NOT built (silences the pnpm warning for these).
+ignoredBuiltDependencies:
+  - "@scarf/scarf" # telemetry — keep disabled
+  - core-js # postinstall is only a donation message

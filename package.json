@@ -1,0 +1,31 @@
+{
+  "name": "paint-shop-dojo",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "check-types": "turbo run check-types",
+    "clean": "turbo run clean",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,mjs,cjs,json,md,css,yaml,yml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mjs,cjs,json,md,css,yaml,yml}\"",
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose stop db",
+    "db:migrate": "pnpm --filter backend exec prisma migrate deploy",
+    "db:generate": "pnpm --filter backend exec prisma generate",
+    "db:seed": "pnpm --filter backend exec prisma db seed",
+    "db:studio": "pnpm --filter backend exec prisma studio",
+    "db:reset": "pnpm --filter backend exec prisma migrate reset"
+  },
+  "devDependencies": {
+    "prettier": "catalog:",
+    "turbo": "catalog:",
+    "typescript": "catalog:"
+  },
+  "packageManager": "pnpm@10.34.4",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=10"
+  }
+}

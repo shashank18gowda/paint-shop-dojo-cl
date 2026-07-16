@@ -1,0 +1,16 @@
+{
+  "name": "paintshop-print-agent",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local WebSocket print server for Paintshop Dojo",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "pdf-to-printer": "^5.0.1",
+    "ws": "^8.18.0"
+  }
+}

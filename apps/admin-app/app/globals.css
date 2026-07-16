@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@theme {
+  --color-toyota-red: #EB0A1E;
+  --color-toyota-gray: #58595B;
+  --font-sans: 'Inter', system-ui, sans-serif;
+}
+
+:root {
+  --sidebar-bg: #111318;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --content-bg: #f3f4f6;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --text: #111827;
+  --text-muted: #6b7280;
+  --text-sub: #9ca3af;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--content-bg);
+  color: var(--text);
+}

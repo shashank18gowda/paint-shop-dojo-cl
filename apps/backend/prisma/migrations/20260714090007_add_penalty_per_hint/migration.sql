@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "GameFlow" ADD COLUMN     "penaltyPerHint" DOUBLE PRECISION NOT NULL DEFAULT 0;
+
+-- AlterTable
+ALTER TABLE "GameRunStep" ADD COLUMN     "hintsUsed" INTEGER NOT NULL DEFAULT 0;

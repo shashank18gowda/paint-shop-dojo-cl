@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.jest.json",
+  "compilerOptions": {
+    "types": ["jest", "node"],
+    "baseUrl": "..",
+    "paths": {
+      "@prisma/client": ["./src/generated/prisma"]
+    }
+  },
+  "include": ["./**/*.ts", "../src/**/*.ts"]
+}

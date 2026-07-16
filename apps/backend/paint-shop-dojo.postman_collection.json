@@ -1,0 +1,1057 @@
+{
+  "info": {
+    "name": "Paint Shop Dojo API",
+    "description": "API collection for the Paint Shop Dojo kiosk training backend (NestJS). Base URL: {{baseUrl}}/api",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "JWT Bearer token — set after login or register"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string",
+      "description": "JWT Bearer token for an ADMIN-role participant"
+    }
+  ],
+  "item": [
+    {
+      "name": "Master Data (Public)",
+      "item": [
+        {
+          "name": "Get Languages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/languages",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "languages"]
+            },
+            "description": "Returns all available languages."
+          }
+        },
+        {
+          "name": "Get Designations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/designations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "designations"]
+            },
+            "description": "Returns all active designations."
+          }
+        },
+        {
+          "name": "Get Lines",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/lines",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lines"]
+            },
+            "description": "Returns all production lines."
+          }
+        },
+        {
+          "name": "Get Participant Types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/participant-types",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "participant-types"]
+            },
+            "description": "Returns all participant types (operator, supervisor, etc.)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "health"]
+            },
+            "description": "Returns application and database health status."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Auth",
+      "item": [
+        {
+          "name": "Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.token) {",
+                  "  pm.collectionVariables.set('adminToken', res.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@tkm.co.in\",\n  \"password\": \"change-me-please\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/admin/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "admin", "login"]
+            },
+            "description": "Authenticate an admin by email + password. Rate-limited to 5 requests/min. Auto-sets {{adminToken}} on success."
+          }
+        },
+        {
+          "name": "Get Current Admin",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/admin/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "admin", "me"]
+            },
+            "description": "Returns the currently authenticated admin's profile."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.accessToken) {",
+                  "  pm.collectionVariables.set('token', res.accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeCode\": \"EMP001\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Identify an existing participant by employee code. Rate-limited to 5 requests/min. Auto-sets {{token}} on success."
+          }
+        },
+        {
+          "name": "Register (Kiosk Self-Registration)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.accessToken) {",
+                  "  pm.collectionVariables.set('token', res.accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"employeeCode\": \"EMP999\",\n  \"participantTypeId\": \"<uuid>\",\n  \"designationId\": \"<uuid>\",\n  \"lineId\": \"<uuid>\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Self-register a new participant at the kiosk. Rate-limited to 3 requests/min. Auto-sets {{token}} on success."
+          }
+        },
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Returns the currently authenticated participant's profile."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Participants",
+      "item": [
+        {
+          "name": "List All Participants (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/participants?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "participants"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            },
+            "description": "List all participants. Requires ADMIN role."
+          }
+        },
+        {
+          "name": "Get Participant by Code",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/participants/EMP001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "participants", "EMP001"]
+            },
+            "description": "Look up a participant by their employee code."
+          }
+        },
+        {
+          "name": "Get Participant Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/participants/EMP001/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "participants", "EMP001", "stats"]
+            },
+            "description": "Get quiz/game performance stats for a participant."
+          }
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"designationId\": \"<uuid>\",\n  \"lineId\": \"<uuid>\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/participants/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "participants", "me"]
+            },
+            "description": "Update name, designation, or line for the current participant. All fields optional."
+          }
+        },
+        {
+          "name": "Upload Profile Photo",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "photo",
+                  "type": "file",
+                  "description": "Allowed: jpg, jpeg, png, webp. Max size: 5MB."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/participants/me/photo",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "participants", "me", "photo"]
+            },
+            "description": "Upload or replace the current participant's profile photo."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Quiz",
+      "item": [
+        {
+          "name": "Get Quiz Eligibility",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/quiz/eligibility",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quiz", "eligibility"]
+            },
+            "description": "Check whether the current participant can start a new quiz. Returns { eligible, lastAttemptPassed, cooldownUntil, daysRemaining }. Cooldown defaults: 365 days after a pass, 30 days after a fail (overridable via QUIZ_COOLDOWN_PASS_DAYS / QUIZ_COOLDOWN_FAIL_DAYS env vars)."
+          }
+        },
+        {
+          "name": "Get Quiz Questions",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/quiz/questions?lang=EN&count=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quiz", "questions"],
+              "query": [
+                { "key": "lang", "value": "EN", "description": "Language code (default: EN)" },
+                { "key": "count", "value": "10", "description": "Number of questions (default: 10)" }
+              ]
+            },
+            "description": "Fetch a randomized set of questions for a quiz session."
+          }
+        },
+        {
+          "name": "Start Quiz Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"language\": \"EN\",\n  \"questionCount\": 10\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/quiz/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quiz", "sessions"]
+            },
+            "description": "Start a new quiz session. language and questionCount are optional (defaults: EN, 10). questionCount range: 3–50."
+          }
+        },
+        {
+          "name": "Submit Quiz Answers",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answers\": [\n    {\n      \"questionId\": \"<uuid>\",\n      \"optionId\": \"<uuid>\",\n      \"timeTaken\": 15\n    },\n    {\n      \"questionId\": \"<uuid>\",\n      \"optionId\": \"<uuid>\",\n      \"timeTaken\": 22\n    }\n  ],\n  \"totalQuestions\": 10\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/quiz/sessions/:id/submit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quiz", "sessions", ":id", "submit"],
+              "variable": [
+                { "key": "id", "value": "<session-uuid>", "description": "Quiz session ID" }
+              ]
+            },
+            "description": "Submit all answers for a session and receive the scored result. timeTaken per answer is optional."
+          }
+        },
+        {
+          "name": "Get Session Result",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/quiz/sessions/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quiz", "sessions", ":id"],
+              "variable": [
+                { "key": "id", "value": "<session-uuid>", "description": "Quiz session ID" }
+              ]
+            },
+            "description": "Retrieve the result of a completed quiz session."
+          }
+        },
+        {
+          "name": "Get My Quiz History",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/quiz/history?sort=recent&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quiz", "history"],
+              "query": [
+                { "key": "sort", "value": "recent", "description": "recent | best" },
+                { "key": "limit", "value": "20" }
+              ]
+            },
+            "description": "Get the authenticated participant's quiz attempt history."
+          }
+        },
+        {
+          "name": "Get Attempt Review",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/quiz/attempts/:attemptId/review?lang=EN",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quiz", "attempts", ":attemptId", "review"],
+              "query": [
+                { "key": "lang", "value": "EN", "description": "Language code for question text (default: EN)" }
+              ],
+              "variable": [
+                { "key": "attemptId", "value": "<attempt-uuid>", "description": "Quiz attempt ID" }
+              ]
+            },
+            "description": "Get a per-question review for a specific quiz attempt."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Game",
+      "item": [
+        {
+          "name": "Get Game Stages",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/game/stages",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "game", "stages"]
+            },
+            "description": "Returns all active paint process simulation stages."
+          }
+        },
+        {
+          "name": "Get Stage Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/game/stages/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "game", "stages", ":id"],
+              "variable": [
+                { "key": "id", "value": "<stage-uuid>", "description": "Game stage ID" }
+              ]
+            },
+            "description": "Get details for a specific game stage."
+          }
+        },
+        {
+          "name": "Start Game Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/game/sessions/start/:stageId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "game", "sessions", "start", ":stageId"],
+              "variable": [
+                { "key": "stageId", "value": "<stage-uuid>", "description": "Game stage ID" }
+              ]
+            },
+            "description": "Start a new game session for a given stage."
+          }
+        },
+        {
+          "name": "Complete Game Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"score\": 850,\n  \"timeTaken\": 120\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/game/sessions/:id/complete",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "game", "sessions", ":id", "complete"],
+              "variable": [
+                { "key": "id", "value": "<session-uuid>", "description": "Game session ID" }
+              ]
+            },
+            "description": "Mark a game session as complete with a final score and time taken."
+          }
+        },
+        {
+          "name": "Get My Game Progress",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/game/progress",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "game", "progress"]
+            },
+            "description": "Get the authenticated participant's progress across all game stages."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Leaderboard (Public)",
+      "item": [
+        {
+          "name": "Get Leaderboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/leaderboard?type=GLOBAL&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaderboard"],
+              "query": [
+                { "key": "type", "value": "GLOBAL", "description": "GLOBAL | DAILY | WEEKLY | MONTHLY" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Public leaderboard. type defaults to GLOBAL."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Certificates",
+      "item": [
+        {
+          "name": "Get Certificate Metadata",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/certificates/:attemptId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "certificates", ":attemptId"],
+              "variable": [
+                { "key": "attemptId", "value": "<attempt-uuid>", "description": "Quiz attempt ID" }
+              ]
+            },
+            "description": "Retrieve certificate metadata for a completed quiz attempt."
+          }
+        },
+        {
+          "name": "Download Certificate PDF",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/certificates/:attemptId/download",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "certificates", ":attemptId", "download"],
+              "variable": [
+                { "key": "attemptId", "value": "<attempt-uuid>", "description": "Quiz attempt ID" }
+              ]
+            },
+            "description": "Download the certificate as a PDF file for a completed quiz attempt."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Reports",
+          "item": [
+            {
+              "name": "Dashboard Overview",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/reports/overview",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "reports", "overview"]
+                },
+                "description": "Admin dashboard overview stats (total participants, sessions, completion rates, etc.). Requires ADMIN role."
+              }
+            },
+            {
+              "name": "List Sessions",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/reports/sessions?page=1&limit=20",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "reports", "sessions"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "20" },
+                    { "key": "designationId", "value": "", "disabled": true },
+                    { "key": "status", "value": "", "description": "IN_PROGRESS | COMPLETED | FAILED", "disabled": true },
+                    { "key": "from", "value": "", "description": "ISO date string, e.g. 2025-01-01", "disabled": true },
+                    { "key": "to", "value": "", "description": "ISO date string, e.g. 2025-12-31", "disabled": true }
+                  ]
+                },
+                "description": "Paginated list of quiz sessions with optional filters: designationId, status, from/to date. Requires ADMIN role."
+              }
+            },
+            {
+              "name": "Designation Performance",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/reports/designations",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "reports", "designations"]
+                },
+                "description": "Per-designation performance stats. Requires ADMIN role."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Export",
+          "item": [
+            {
+              "name": "Export Sessions as CSV",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/export/sessions",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "export", "sessions"],
+                  "query": [
+                    { "key": "designationId", "value": "", "disabled": true },
+                    { "key": "status", "value": "", "description": "IN_PROGRESS | COMPLETED | FAILED", "disabled": true },
+                    { "key": "from", "value": "", "description": "ISO date string", "disabled": true },
+                    { "key": "to", "value": "", "description": "ISO date string", "disabled": true }
+                  ]
+                },
+                "description": "Export filtered sessions as a CSV file. Same filters as session list. Requires ADMIN role."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Master Data",
+          "description": "Admin CRUD for reference data (languages, lines, designations, participant types). DELETE is soft (sets isActive=false). Re-activate via PATCH with isActive=true.",
+          "item": [
+            {
+              "name": "Languages",
+              "item": [
+                {
+                  "name": "List All (incl. inactive)",
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/api/admin/languages",
+                      "host": ["{{baseUrl}}"],
+                      "path": ["api", "admin", "languages"]
+                    },
+                    "description": "List all languages including inactive ones. Requires ADMIN role."
+                  }
+                },
+                {
+                  "name": "Create",
+                  "request": {
+                    "method": "POST",
+                    "header": [
+                      { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+                      { "key": "Content-Type", "value": "application/json" }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"code\": \"FR\",\n  \"name\": \"French\",\n  \"isActive\": true\n}"
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/api/admin/languages",
+                      "host": ["{{baseUrl}}"],
+                      "path": ["api", "admin", "languages"]
+                    },
+                    "description": "Create a new language. code must be unique. Requires ADMIN role."
+                  }
+                },
+                {
+                  "name": "Update",
+                  "request": {
+                    "method": "PATCH",
+                    "header": [
+                      { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+                      { "key": "Content-Type", "value": "application/json" }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"name\": \"Français\",\n  \"isActive\": true\n}"
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/api/admin/languages/:id",
+                      "host": ["{{baseUrl}}"],
+                      "path": ["api", "admin", "languages", ":id"],
+                      "variable": [
+                        { "key": "id", "value": "<language-uuid>" }
+                      ]
+                    },
+                    "description": "Partial update — any field optional. Set isActive=true to re-activate a soft-deleted record. Requires ADMIN role."
+                  }
+                },
+                {
+                  "name": "Soft Delete",
+                  "request": {
+                    "method": "DELETE",
+                    "header": [
+                      { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/api/admin/languages/:id",
+                      "host": ["{{baseUrl}}"],
+                      "path": ["api", "admin", "languages", ":id"],
+                      "variable": [
+                        { "key": "id", "value": "<language-uuid>" }
+                      ]
+                    },
+                    "description": "Soft-delete (sets isActive=false). Hidden from public GET, still visible in admin GET. Reversible via PATCH. Requires ADMIN role."
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Lines",
+              "item": [
+                {
+                  "name": "List All (incl. inactive)",
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/api/admin/lines",
+                      "host": ["{{baseUrl}}"],
+                      "path": ["api", "admin", "lines"]
+                    },
+                    "description": "List all production lines including inactive ones. Requires ADMIN role."
+                  }
+                },
+                {
+                  "name": "Create",
+                  "request": {
+                    "method": "POST",
+                    "header": [
+                      { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+                      { "key": "Content-Type", "value": "application/json" }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"code\": \"TOP_COAT\",\n  \"name\": \"Top Coat Line\",\n  \"sortOrder\": 1,\n  \"isActive\": true\n}"
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/api/admin/lines",
+                      "host": ["{{baseUrl}}"],
+                      "path": ["api", "admin", "lines"]
+                    },
+                    "description": "Create a new production line. code must be unique. Requires ADMIN role."
+                  }
+                },
+                {
+                  "name": "Update",
+                  "request": {
+                    "method": "PATCH",
+                    "header": [
+                      { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+                      { "key": "Content-Type", "value": "application/json" }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"name\": \"Top Coat Line A\",\n  \"sortOrder\": 2\n}"
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/api/admin/lines/:id",
+                      "host": ["{{baseUrl}}"],
+                      "path": ["api", "admin", "lines", ":id"],
+                      "variable": [
+                        { "key": "id", "value": "<line-uuid>" }
+                      ]
+                    },
+                    "description": "Partial update — any field optional. Requires ADMIN role."
+                  }
+                },
+                {
+                  "name": "Soft Delete",
+                  "request": {
+                    "method": "DELETE",
+                    "header": [
+                      { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/api/admin/lines/:id",
+                      "host": ["{{baseUrl}}"],
+                      "path": ["api", "admin", "lines", ":id"],
+                      "variable": [
+                        { "key": "id", "value": "<line-uuid>" }
+                      ]
+                    },
+                    "description": "Soft-delete (sets isActive=false). Reversible via PATCH. Requires ADMIN role."
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Designations",
+              "item": [
+                {
+                  "name": "List All (incl. inactive)",
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/api/admin/designations",
+                      "host": ["{{baseUrl}}"],
+                      "path": ["api", "admin", "designations"]
+                    },
+                    "description": "List all designations including inactive ones. Requires ADMIN role."
+                  }
+                },
+                {
+                  "name": "Create",
+                  "request": {
+                    "method": "POST",
+                    "header": [
+                      { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+                      { "key": "Content-Type", "value": "application/json" }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"code\": \"PAINT_SHOP\",\n  \"name\": \"Paint Shop\",\n  \"description\": \"Vehicle painting and coating\",\n  \"sortOrder\": 1,\n  \"isActive\": true\n}"
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/api/admin/designations",
+                      "host": ["{{baseUrl}}"],
+                      "path": ["api", "admin", "designations"]
+                    },
+                    "description": "Create a new designation. code must be unique. Requires ADMIN role."
+                  }
+                },
+                {
+                  "name": "Update",
+                  "request": {
+                    "method": "PATCH",
+                    "header": [
+                      { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+                      { "key": "Content-Type", "value": "application/json" }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"name\": \"Paint Shop A\",\n  \"description\": \"Updated description\"\n}"
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/api/admin/designations/:id",
+                      "host": ["{{baseUrl}}"],
+                      "path": ["api", "admin", "designations", ":id"],
+                      "variable": [
+                        { "key": "id", "value": "<designation-uuid>" }
+                      ]
+                    },
+                    "description": "Partial update — any field optional. Requires ADMIN role."
+                  }
+                },
+                {
+                  "name": "Soft Delete",
+                  "request": {
+                    "method": "DELETE",
+                    "header": [
+                      { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/api/admin/designations/:id",
+                      "host": ["{{baseUrl}}"],
+                      "path": ["api", "admin", "designations", ":id"],
+                      "variable": [
+                        { "key": "id", "value": "<designation-uuid>" }
+                      ]
+                    },
+                    "description": "Soft-delete (sets isActive=false). Reversible via PATCH. Requires ADMIN role."
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Participant Types",
+              "item": [
+                {
+                  "name": "List All (incl. inactive)",
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/api/admin/participant-types",
+                      "host": ["{{baseUrl}}"],
+                      "path": ["api", "admin", "participant-types"]
+                    },
+                    "description": "List all participant types including inactive ones. Requires ADMIN role."
+                  }
+                },
+                {
+                  "name": "Create",
+                  "request": {
+                    "method": "POST",
+                    "header": [
+                      { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+                      { "key": "Content-Type", "value": "application/json" }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"code\": \"INTERN\",\n  \"name\": \"Intern\",\n  \"sortOrder\": 4,\n  \"isActive\": true\n}"
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/api/admin/participant-types",
+                      "host": ["{{baseUrl}}"],
+                      "path": ["api", "admin", "participant-types"]
+                    },
+                    "description": "Create a new participant type. code must be unique. Requires ADMIN role."
+                  }
+                },
+                {
+                  "name": "Update",
+                  "request": {
+                    "method": "PATCH",
+                    "header": [
+                      { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+                      { "key": "Content-Type", "value": "application/json" }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"name\": \"Trainee Intern\",\n  \"sortOrder\": 5\n}"
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/api/admin/participant-types/:id",
+                      "host": ["{{baseUrl}}"],
+                      "path": ["api", "admin", "participant-types", ":id"],
+                      "variable": [
+                        { "key": "id", "value": "<participant-type-uuid>" }
+                      ]
+                    },
+                    "description": "Partial update — any field optional. Requires ADMIN role."
+                  }
+                },
+                {
+                  "name": "Soft Delete",
+                  "request": {
+                    "method": "DELETE",
+                    "header": [
+                      { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/api/admin/participant-types/:id",
+                      "host": ["{{baseUrl}}"],
+                      "path": ["api", "admin", "participant-types", ":id"],
+                      "variable": [
+                        { "key": "id", "value": "<participant-type-uuid>" }
+                      ]
+                    },
+                    "description": "Soft-delete (sets isActive=false). Reversible via PATCH. Requires ADMIN role."
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

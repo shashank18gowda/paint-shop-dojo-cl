@@ -1,0 +1,91 @@
+# =============================================================
+# Paint Shop Dojo — monorepo .gitignore
+# One authoritative ignore file for all apps and packages.
+# =============================================================
+
+# ── Dependencies ──────────────────────────────────────────────
+node_modules/
+.pnpm-store/
+
+# ── Build outputs ─────────────────────────────────────────────
+# Next.js (admin-app, quiz-app)
+.next/
+out/
+next-env.d.ts
+# Vite (game-app)
+dist/
+dist-ssr/
+# NestJS / TypeScript
+build/
+*.tsbuildinfo
+# Turborepo
+.turbo/
+
+# ── Prisma ────────────────────────────────────────────────────
+.prisma/
+apps/backend/src/generated/
+
+# ── Runtime data ──────────────────────────────────────────────
+uploads/
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# ── Environment variables (only *.example is committed) ───────
+.env
+.env.*
+!.env.example
+!.env.test
+*.local
+
+# ── Logs ──────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+# Node.js diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# ── Testing ───────────────────────────────────────────────────
+coverage/
+*.lcov
+.nyc_output/
+
+# ── Caches ────────────────────────────────────────────────────
+.cache/
+.eslintcache
+.temp/
+.tmp/
+
+# ── Deployment ────────────────────────────────────────────────
+.vercel
+
+# ── Editors / IDE ─────────────────────────────────────────────
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.sublime-workspace
+*.code-workspace
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ── OS files ──────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ── Misc ──────────────────────────────────────────────────────
+*.zip
+*.tgz
+
+# NOTE: *.pem / *.crt are intentionally NOT ignored — TLS certs are
+# committed for deployment (print-agent). Uncomment to ignore if that changes.
+# *.pem
+# *.crt

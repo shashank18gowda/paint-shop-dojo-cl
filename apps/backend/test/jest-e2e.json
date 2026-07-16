@@ -1,0 +1,17 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testRegex": "\\.e2e-spec\\.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": ["ts-jest", { "tsconfig": "<rootDir>/../tsconfig.jest.json" }]
+  },
+  "transformIgnorePatterns": ["/node_modules/", "src/generated/prisma"],
+  "moduleNameMapper": {
+    "@prisma/client-runtime-utils": "<rootDir>/../node_modules/@prisma/client-runtime-utils",
+    "@prisma/client": "<rootDir>/../src/generated/prisma"
+  },
+  "globalSetup": "<rootDir>/setup/global-setup.ts",
+  "setupFiles": ["<rootDir>/setup/env.ts"],
+  "testTimeout": 30000
+}
